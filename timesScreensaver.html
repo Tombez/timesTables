@@ -18,8 +18,8 @@
 <body>
 	<canvas id="canvas"></canvas>
 	<script>
-		// Please refer to https://www.youtube.com/watch?v=qhbuKbxJsk8 for why this pattern looks so cool.
-		// Please refer to http://ericleong.me/research/circle-circle/ for circle-circle collision math.
+		// For why this pattern looks so cool, please refer to https://www.youtube.com/watch?v=qhbuKbxJsk8
+		// For circle-circle collision math, refer to http://ericleong.me/research/circle-circle/
 
 		// user variables
 		const lineNum = 1000;
@@ -37,18 +37,16 @@
 		let canvas = document.getElementById("canvas");
 		let ctx;
 		let timesCircles = [];
-		let fps = 0;
-		let fpsProg = 0;
 		let ignoreStep = true;
 
 		// main
 		document.addEventListener("DOMContentLoaded", () => {
-			let r = Math.min(innerWidth, innerHeight);
-			prevR = r;
-			r /= 4;
+			prevR = Math.min(innerWidth, innerHeight);
+			const largest = prevR / 4;
+			const smallest = largest / 8;
 			for (let n = 0; n < circleNum; n++) {
-				timesCircles.push(new TimesCircle(Math.random() * innerWidth, Math.random() * innerHeight, r, Math.floor(lineNum * (r / (prevR / 3))), Math.random() * lineNum));
-				r /= 1.2;
+				const size = (largest - smallest) * 2 * (1 / (n + 2)) + smallest;
+				timesCircles.push(new TimesCircle(Math.random() * innerWidth, Math.random() * innerHeight, size, Math.floor(lineNum * (size / (prevR / 3))), (n / (circleNum + 1)) * lineNum));
 			}
 			prevWidth = innerWidth;
 			prevHeight = innerHeight;
@@ -56,17 +54,9 @@
 			window.addEventListener("resize", () => requestAnimationFrame(resize));
 			resize();
 			draw();
-			setInterval(() => {fps = fpsProg; fpsProg = 0;}, 1e3);
 		});
 
-		// functions
-		const getPoint = (_percent, _r) => {
-			const angle = _percent * 2 * Math.PI;
-			return {
-				x: Math.cos(angle) * _r,
-				y: Math.sin(angle) * _r
-			};
-		};
+		// classes
 		class TimesCircle {
 			constructor(_x = 0, _y = 0, _r, _num, _mult = 0) {
 				this.x = _x;
@@ -74,10 +64,7 @@
 				this.r = _r;
 				this.num = _num;
 				this.mult = _mult;
-				this.vel = {
-					x: Math.random() * 2 - 1,
-					y: Math.random() * 2 - 1
-				};
+				this.vel = getPoint(Math.random());
 				this.points;
 				this.lineWidth;
 				this.mass;
@@ -146,6 +133,15 @@
 				_ctx.translate(-this.x, -this.y);
 			}
 		}
+
+		// functions
+		const getPoint = (_percent, _r = 1) => {
+			const angle = _percent * 2 * Math.PI;
+			return {
+				x: Math.cos(angle) * _r,
+				y: Math.sin(angle) * _r
+			};
+		};
 		const resize = () => {
 			canvas.width = window.innerWidth;
 			canvas.height =window.innerHeight;
@@ -164,7 +160,6 @@
 			prevHeight = innerHeight;
 		};
 		const draw = () => {
-			fpsProg++;
 			ctx.fillStyle = "#000";
 			ctx.fillRect(0, 0, canvas.width, canvas.height);
 
@@ -215,11 +210,8 @@
 				}
 			}
 			for (let circ of timesCircles) {
-				circ.draw(ctx, "hsl(" + Math.floor(circ.mult / colorLoop * 360) % 360 + ", 100%, 50%)");
+				circ.draw(ctx, "hsl(" + circ.mult / colorLoop * 360 + ", 100%, 50%)");
 			}
-
-			ctx.fillStyle = "#fff"; // fps
-			ctx.fillText(fps, 0, canvas.height);
 
 			requestAnimationFrame(draw);
 		};
