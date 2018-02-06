@@ -4,7 +4,6 @@
 // user variables
 const lineNum = 1000;
 const circleNum = 10;
-const lineDensity = 1;
 const increment = 0.002;
 const colorLoop = 8; // loops before color loops.
 
@@ -27,7 +26,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const smallest = largest / 8;
     for (let n = 0; n < circleNum; n++) {
         const size = (largest - smallest) * 2 * (1 / (n + 2)) + smallest;
-        timesCircles.push(new TimesCircle(Math.random() * innerWidth, Math.random() * innerHeight, size, Math.floor(lineNum * (size / (prevR / 3))), (n / (circleNum + 1)) * lineNum));
+        const circ = new MovingTimesCircle(Math.floor(lineNum * (size / (prevR / 3))), (n / (circleNum + 1)) * lineNum, Math.random() * innerWidth, Math.random() * innerHeight);
+        circ.resize(size);
+        timesCircles.push(circ);
     }
     prevWidth = innerWidth;
     prevHeight = innerHeight;
@@ -36,84 +37,6 @@ document.addEventListener("DOMContentLoaded", () => {
     resize();
     draw();
 });
-
-// classes
-class TimesCircle {
-    constructor(_x = 0, _y = 0, _r, _num, _mult = 0) {
-        this.x = _x;
-        this.y = _y;
-        this.r = _r;
-        this.num = _num;
-        this.mult = _mult;
-        this.vel = getPoint(Math.random());
-        this.points;
-        this.lineWidth;
-        this.mass;
-        this.resize(this.r);
-    }
-    resize(_r) {
-        this.r = _r;
-        this.mass = this.r ** 2;
-        this.lineWidth = (lineDensity * 2 * this.r) / this.num;
-        this.points = new Array(this.num);
-        for (let n = 0; n < this.num; n++) {
-            this.points[n] = getPoint(n / this.num, this.r);
-        }
-    }
-    move(_timeMult) {
-        this.x += this.vel.x * _timeMult;
-        this.y += this.vel.y * _timeMult;
-        if (this.x + this.r >= canvas.width) {
-            this.x = canvas.width - this.r;
-            this.vel.x *= -1;
-        }
-        if (this.x - this.r <= 0) {
-            this.x = this.r;
-            this.vel.x *= -1;
-        }
-        if (this.y + this.r >= canvas.height) {
-            this.y = canvas.height - this.r;
-            this.vel.y *= -1;
-        }
-        if (this.y - this.r <= 0) {
-            this.y = this.r;
-            this.vel.y *= -1;
-        }
-    }
-    draw(_ctx, _color) {
-        _ctx.translate(this.x, this.y);
-
-        _ctx.beginPath(); // center point
-        _ctx.fillStyle = "#fff";
-        _ctx.circle(0, 0, 1);
-        _ctx.fill();
-
-        _ctx.beginPath(); // math lines
-        _ctx.lineWidth = this.lineWidth;
-        _ctx.strokeStyle = _color;
-        for (let n = 0; n < this.num; n++) {
-            const src = this.points[n];
-            const dest = getPoint(n * this.mult / this.num, this.r);
-            _ctx.moveTo(src.x, src.y);
-            _ctx.lineTo(dest.x, dest.y);
-        }
-        _ctx.stroke();
-
-        _ctx.beginPath(); // outer circle
-        _ctx.lineWidth = 2;
-        _ctx.strokeStyle = "#fff";
-        let first = this.points[0];
-        _ctx.moveTo(first.x, first.y);
-        for (let n = 1; n < this.num; n++) {
-            const p = this.points[n];
-            _ctx.lineTo(p.x, p.y);
-        }
-        _ctx.lineTo(first.x, first.y);
-        _ctx.stroke();
-
-        _ctx.translate(-this.x, -this.y);
-    }
-}
 
 // functions
 const getPoint = (_percent, _r = 1) => {
@@ -124,8 +47,8 @@ const getPoint = (_percent, _r = 1) => {
     };
 };
 const resize = () => {
-    canvas.width = window.innerWidth;
-    canvas.height =window.innerHeight;
+    canvas.width = innerWidth;
+    canvas.height = innerHeight;
     ctx = canvas.getContext("2d");
     let r = Math.min(canvas.width, canvas.height);
     const rScale = r / prevR;
