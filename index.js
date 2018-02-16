@@ -6,20 +6,7 @@ const colorLoop = 8; // loops before color loops.
 const lineDensity = 0.3;
 
 const framestep = 1000 / 60;
-let canvas;
-let ctx;
-let circ;
-let prev;
 
-document.addEventListener("DOMContentLoaded", () => {
-    circ = new TimesCircle(num);
-    canvas = document.getElementById("canvas");
-    ctx = canvas.getContext("2d");
-    window.addEventListener("resize", () => requestAnimationFrame(resize));
-    resize();
-    prev = performance.now();
-    draw();
-});
 const resize = () => {
     circ.resize(Math.min(innerWidth, innerHeight) / 2 - pad, lineDensity);
     canvas.width = canvas.height = (circ.r + pad) * 2;
@@ -28,7 +15,7 @@ const resize = () => {
 };
 const draw = () => {
     ctx.fillStyle = "#000";
-    ctx.fillRect(-canvas.width/2, canvas.height/2, canvas.width, -canvas.height);
+    ctx.fillRect(-canvas.width / 2, canvas.height / 2, canvas.width, -canvas.height);
 
     circ.draw(ctx, colorLoop);
 
@@ -37,3 +24,18 @@ const draw = () => {
     prev = now;
     requestAnimationFrame(draw);
 };
+
+let canvas;
+let ctx;
+let circ;
+let prev;
+
+document.addEventListener("DOMContentLoaded", () => {
+    canvas = document.getElementById("canvas");
+    ctx = canvas.getContext("2d");
+    circ = new TimesCircle(num);
+    window.addEventListener("resize", () => requestAnimationFrame(resize));
+    resize();
+    prev = performance.now();
+    draw();
+});
