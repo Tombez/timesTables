@@ -40,12 +40,17 @@ const initCircs = () => {
     const smallest = largest / 8;
     for (let n = 0; n < circleNum; n++) {
         const size = (largest - smallest) * 2 * (1 / (n + 2)) + smallest;
-        const circ = new MovingTimesCircle(Math.floor(lineNum * (size / (prevR / 3))), (n / (circleNum + 1)) * lineNum, Math.random() * innerWidth, Math.random() * innerHeight);
+        const numLines = Math.floor(lineNum * (size / (prevR / 3)));
+        const multiplier = (n / (circleNum + 1)) * lineNum;
+        const x = Math.random() * innerWidth;
+        const y = Math.random() * innerHeight;
+        const circ = new MovingTimesCircle(numLines, multiplier, x, y);
         circ.resize(size);
         timesCircles.push(circ);
     }
 };
 const loop = now => {
+    if (resizeRequested) resize(resizeRequested = false);
     step((now - prevTime) / framestep);
     draw();
     prevTime = now;
@@ -82,6 +87,7 @@ let canvas;
 let ctx;
 let timesCircles = [];
 let ignoreStep = true;
+let resizeRequested = false;
 
 document.addEventListener("DOMContentLoaded", () => {
     canvas = document.getElementById("canvas");
@@ -92,7 +98,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initCircs();
     document.addEventListener("visibilitychange", visibilityChange);
     visibilityChange();
-    window.addEventListener("resize", () => requestAnimationFrame(resize));
+    window.addEventListener("resize", () => resizeRequested = true);
     resize();
     requestAnimationFrame(loop);
 });
